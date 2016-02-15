@@ -70,3 +70,6 @@ flycheck_*.el
 
 # server auth directory
 /server/
+
+# build-uno/
+build*/
