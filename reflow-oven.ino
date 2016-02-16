@@ -8,9 +8,9 @@ const long CLK_SPEED = 16000000;
 const unsigned int TIMER_DIV = 62500;
 const int INTS_PER_SEC = CLK_SPEED/TIMER_DIV;
 const float MS_PER_INT = 1000.0/INTS_PER_SEC;
-const int MIN_MS_PERCYCLE = 30; // we don't want shorter cycles than 100ms
+const int MIN_MS_PERCYCLE = 30; // we don't want shorter cycles than 30ms
 // minimum cycles to be turned on:
-const int INTS_PER_MINCYCLE = ceil(100.0/MS_PER_INT);
+const int INTS_PER_MINCYCLE = ceil(MIN_MS_PERCYCLE/MS_PER_INT);
 
 // some constant pin definitions
 const int thermoDO_pin = 5;
