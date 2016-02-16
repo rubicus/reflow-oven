@@ -1,5 +1,9 @@
 // TODO: make stuff mor barebones to just test the interrupt frequency accurately.
 // * Try looking at statics, especially in the ISR.
+
+// so important: * make the char unsigned
+//               * check that all flags reset correctly in their routines
+
 #include "max6675.h"
 #include <LiquidCrystal.h>
 #include "temperature.h"
@@ -67,8 +71,9 @@ void init_lcd() {
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   init_lcd();
+  Serial.print("Hi!");
 
   // Setup pins correctly
   pinMode(relay_pin, OUTPUT);
@@ -92,7 +97,7 @@ void setup() {
 // when code in the main code wants to change the pwm duty cycle, this
 // funtction should be called for safe access. This changes the duty
 // cycle for the next PWM cycle.
-void update_pwm_cycle(char new_cycle) {
+void update_pwm_cycle(unsigned char new_cycle) {
   cli(); // clear interrupt flag for safe access to shared vars
   // Make sure the cycle is longer than the minimum cycle length
   // and to max out if not turned off enough
@@ -105,8 +110,8 @@ void update_pwm_cycle(char new_cycle) {
   sei(); // reenable interrupts
 }
 
-void pwm_routine(char count_val) {
-  static char duty_cycle = 255;
+void pwm_routine(unsigned char count_val) {
+  static unsigned char duty_cycle = 255;
   if (duty_cycle == 255)
     digitalWrite(relay_pin, LOW); // 255 always means off
   else if (count_val == duty_cycle) {
@@ -128,7 +133,7 @@ void pwm_routine(char count_val) {
 
 // here goes the interrupt vector. It's called at 256 Hz
 ISR(TIMER1_COMPA_vect) {
-  static char tmr_int_cnt = 0; // static so it retains value between calls
+  static unsigned char tmr_int_cnt = 0; // static so it retains value between calls
   ++tmr_int_cnt;
 
   // pwm_routine(tmr_int_cnt); // let's go without this!
@@ -173,6 +178,7 @@ void loop () {
 
   // Temp checking routine
   if (check_temp_f) {
+    check_temp_f = 0;
     unsigned int temp1, temp2;
 
     temp1 = thermocouple1.readCelsius();
@@ -189,14 +195,16 @@ void loop () {
 
   // check startstop button, and turn off if flicked
   if (startstop_pressed) {
+    startstop_pressed = 0;
     debug_test_counter1++;
     lcd.setCursor(0,1);
-    lcd.print("clicks: ");
+    lcd.print("clicks:");
     lcd.print(debug_test_counter1, DEC);
   }
 
   //This should be 1 Hz:
   if (update_pwm_f) { // update the pwm duty cycle, and draw state to screen
+    update_pwm_f = 0;
     debug_test_counter2++;
     lcd.setCursor(0,0);
     lcd.print("secs: ");
