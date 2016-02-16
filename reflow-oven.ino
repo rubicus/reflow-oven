@@ -135,7 +135,7 @@ ISR(TIMER1_COMPA_vect) {
 
   if(tmr_int_cnt % 64 == 0) {  // Check temp at 4 Hz (the chip is slow)
     check_temp_f = 1;
-  } 
+  }
   if(tmr_int_cnt % 4 == 0) { //check buttons every 16ms (64Hz) for debounce
     check_button_f = 1;
   }
@@ -155,7 +155,6 @@ void loop () {
   static char startstop_pressed = 0;
   static char mode_pressed = 0;
   static unsigned int last_temp = itotemp(20);
-  static long millis_at_stage_start = millis();
 
   // Button checking routine
   if (check_button_f) {
@@ -193,7 +192,7 @@ void loop () {
     debug_test_counter1++;
     lcd.setCursor(0,1);
     lcd.print("clicks: ");
-    lcd.print(debug_test_counter1, DEC)
+    lcd.print(debug_test_counter1, DEC);
   }
 
   //This should be 1 Hz:
