@@ -79,10 +79,12 @@ void setup() {
   digitalWrite(mode_pin, HIGH);
 
   // Setup timer interrupt correctly
+  cli();
   TCCR1A = 0; //CTC mode (count to OCR1A and reset)
   TCCR1B = _BV(WGM12) | _BV(CS10); //CTC, no prescaling
   OCR1A = TIMER_DIV; // With 16 MHz clock exactly 256 Hz of interrupts
   TIMSK1 = _BV(OCIE1A);
+  sei();
 }
 
 // when code in the main code wants to change the pwm duty cycle, this
