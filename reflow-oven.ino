@@ -1,3 +1,5 @@
+// TODO: make stuff mor barebones to just test the interrupt frequency accurately.
+// * Try looking at statics, especially in the ISR.
 #include "max6675.h"
 #include <LiquidCrystal.h>
 #include "temperature.h"
@@ -125,7 +127,7 @@ void pwm_routine(char count_val) {
 }
 
 // here goes the interrupt vector. It's called at 256 Hz
-SIGNAL(TIMER1_COMPA_vect) {
+ISR(TIMER1_COMPA_vect) {
   static char tmr_int_cnt = 0; // static so it retains value between calls
   ++tmr_int_cnt;
 
