@@ -38,8 +38,8 @@ MAX6675 thermocouple2(thermoCLK_pin, thermoCS2_pin, thermoDO_pin);
 volatile char check_temp_f = 0;
 volatile char check_button_f = 0;
 volatile char next_PWM_cycle = 0; //the value for the next PWM cycle
-volatile char update_pwm_f = 0;
 // 0 is fully off, 255 fully on
+volatile char update_pwm_f = 0;
 
 // a soldering profile:
 // Rampup1 speed (0-255), soak target, soak time, rampup2 speed(0-255),
@@ -53,15 +53,15 @@ void init_lcd() {
   lcd.setCursor(0,1);
   lcd.print("Rev 3");
 
-  delay(1000);
+  delay(2000);
   lcd.clear();
 
   lcd.setCursor(0,0);
   lcd.print(profile_name);
 
-  lcd.setCursor(0,1);
+  lcd.setCursor(9,0);
   lcd.print("Temp: ");
-  lcd.setCursor(11,1);
+  lcd.setCursor(14,1);
   lcd.print("\337C");
 
 }
@@ -92,7 +92,7 @@ void setup() {
 // when code in the main code wants to change the pwm duty cycle, this
 // funtction should be called for safe access. This changes the duty
 // cycle for the next PWM cycle.
-inline void update_pwm_cycle(char new_cycle) {
+void update_pwm_cycle(char new_cycle) {
   cli(); // clear interrupt flag for safe access to shared vars
   // Make sure the cycle is longer than the minimum cycle length
   // and to max out if not turned off enough
@@ -131,7 +131,7 @@ ISR(TIMER1_COMPA_vect) {
   static char tmr_int_cnt = 0; // static so it retains value between calls
   ++tmr_int_cnt;
 
-  pwm_routine(tmr_int_cnt);
+  // pwm_routine(tmr_int_cnt); // let's go without this!
 
   if(tmr_int_cnt % 64 == 0) {  // Check temp at 4 Hz (the chip is slow)
     check_temp_f = 1;
@@ -143,12 +143,13 @@ ISR(TIMER1_COMPA_vect) {
     update_pwm_f = 1;
 }
 
+int debug_test_counter1 = 0;
+int debug_test_counter2 = 0;
 void loop () {
   //this loop needs to check button and temp and update things accordingly
   // it also needs to check buttons and do the right thing depending on state
 
   // Some local variables (statically to be retained between calls)
-  static State the_state = MENU;
   static char last_startstopb_s = digitalRead(startstop_pin);
   static char last_modeb_s = digitalRead(mode_pin);
   static char startstop_pressed = 0;
@@ -183,87 +184,23 @@ void loop () {
     // Update display with new temp
     char temp_string[6];
     temptos(last_temp, temp_string);
-    lcd.setCursor(6,1);
+    lcd.setCursor(9,1);
     lcd.print(temp_string);
   }
 
-  // Main switch case for dealing with states
-  char new_duty_cyc = 0;
-  switch(the_state) {
-  case MENU:
-    new_duty_cyc = 0;
-    if (startstop_pressed) {
-      startstop_pressed = 0;
-      the_state = RAMPUP1;
-      millis_at_stage_start = millis();
-    }
-    if (mode_pressed) {
-      mode_pressed = 0;
-      lcd.setCursor(0,0);
-      lcd.print(profile_name);
-    }
-    break;
-  case RAMPUP1:
-    new_duty_cyc = pb_profile[0]; // use PWM cycle from profile
-    if (last_temp >= itotemp(pb_profile [1])) { // go to next stage at target temp
-      the_state = SOAK;
-      millis_at_stage_start = millis();
-    }
-    break;
-  case SOAK:
-    //try to hold this temp for the specified time
-    if (last_temp < itotemp(pb_profile [1]))
-      new_duty_cyc = 255;
-    else
-      new_duty_cyc = 0;
-    if ((millis()-millis_at_stage_start > (pb_profile[2]*1000))) {
-      the_state = RAMPUP2;
-      millis_at_stage_start = millis();
-    }
-    break;
-  case RAMPUP2:
-    //like first rampup, get duty cycle from profile and cont. at targ. temp.
-    new_duty_cyc = pb_profile[3];
-    if (last_temp > itotemp(pb_profile [4])) {
-      the_state = PEAK;
-      millis_at_stage_start = millis();
-    }
-    break;
-  case PEAK:
-    // as in soak, keep temp
-    if (last_temp < itotemp(pb_profile [4]))
-      new_duty_cyc = 255;
-    else
-      new_duty_cyc = 0;
-    if ((millis()-millis_at_stage_start > (pb_profile[5]*1000))) {
-      the_state = COOLDOWN;
-      millis_at_stage_start = millis();
-    }
-    break;
-  case COOLDOWN:
-    //turn off until reasonably cool
-    new_duty_cyc = 0;
-    if (last_temp < itotemp(60)) {
-      the_state = MENU;
-      millis_at_stage_start = millis();
-    }
-    break;
-  default:
-    new_duty_cyc = 0;
-    the_state = MENU;
-    break;
-  } // end of switch
-  
   // check startstop button, and turn off if flicked
   if (startstop_pressed) {
-    startstop_pressed = 0;
-    the_state = MENU;
-    new_duty_cyc = 0;
+    debug_test_counter1++;
+    lcd.setCursor(0,1);
+    lcd.print("clicks: ");
+    lcd.print(debug_test_counter1, DEC)
   }
 
+  //This should be 1 Hz:
   if (update_pwm_f) { // update the pwm duty cycle, and draw state to screen
-    update_pwm_cycle(new_duty_cyc);
+    debug_test_counter2++;
     lcd.setCursor(0,0);
-    lcd.print(state_names[the_state]);
+    lcd.print("secs: ");
+    lcd.print(debug_test_counter2, DEC);
   }
 }
