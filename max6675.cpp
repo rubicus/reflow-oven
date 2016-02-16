@@ -17,7 +17,7 @@ MAX6675::MAX6675(int8_t SCLK, int8_t CS, int8_t MISO) {
 
   //define pin modes
   pinMode(cs, OUTPUT);
-  pinMode(sclk, OUTPUT); 
+  pinMode(sclk, OUTPUT);
   pinMode(miso, INPUT);
 
   digitalWrite(cs, HIGH);
@@ -46,7 +46,7 @@ unsigned int MAX6675::readCelsius(void) {
   return v<<4;
 }
 
-byte MAX6675::spiread(void) { 
+byte MAX6675::spiread(void) {
   int i;
   byte d = 0;
 

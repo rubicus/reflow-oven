@@ -8,7 +8,7 @@ const long CLK_SPEED = 16000000;
 const unsigned int TIMER_DIV = 62500;
 const int INTS_PER_SEC = CLK_SPEED/TIMER_DIV;
 const float MS_PER_INT = 1000.0/INTS_PER_SEC;
-const int MIN_MS_PERCYCLE = 100; // we don't want shorter cycles than 100ms
+const int MIN_MS_PERCYCLE = 30; // we don't want shorter cycles than 100ms
 // minimum cycles to be turned on:
 const int INTS_PER_MINCYCLE = ceil(100.0/MS_PER_INT);
 
@@ -42,7 +42,7 @@ volatile char update_pwm_f = 0;
 // a soldering profile:
 // Rampup1 speed (0-255), soak target, soak time, rampup2 speed(0-255),
 // peak target temp, time at peak
-const long pb_profile[6] = {150,140,45,200,205,20};
+const long pb_profile[6] = {255,140,45,200,205,20};
 const char profile_name[] = "Old Fashioned Pb";
 
 void init_lcd() {
@@ -90,7 +90,7 @@ void setup() {
 // when code in the main code wants to change the pwm duty cycle, this
 // funtction should be called for safe access. This changes the duty
 // cycle for the next PWM cycle.
-inline void update_pwm_cycle(char new_cycle) {
+inline void update_pwm_cycle(unsigned char new_cycle) {
   cli(); // clear interrupt flag for safe access to shared vars
   // Make sure the cycle is longer than the minimum cycle length
   // and to max out if not turned off enough
@@ -103,8 +103,8 @@ inline void update_pwm_cycle(char new_cycle) {
   sei(); // reenable interrupts
 }
 
-void pwm_routine(char count_val) {
-  static char duty_cycle = 255;
+void pwm_routine(unsigned char count_val) {
+  static unsigned char duty_cycle = 255;
   if (duty_cycle == 255)
     digitalWrite(relay_pin, LOW); // 255 always means off
   else if (count_val == duty_cycle) {
@@ -126,14 +126,14 @@ void pwm_routine(char count_val) {
 
 // here goes the interrupt vector. It's called at 256 Hz
 ISR(TIMER1_COMPA_vect) {
-  static char tmr_int_cnt = 0; // static so it retains value between calls
+  static unsigned char tmr_int_cnt = 0; // static so it retains value between calls
   ++tmr_int_cnt;
 
   pwm_routine(tmr_int_cnt);
 
   if(tmr_int_cnt % 64 == 0) {  // Check temp at 4 Hz (the chip is slow)
     check_temp_f = 1;
-  } 
+  }
   if(tmr_int_cnt % 4 == 0) { //check buttons every 16ms (64Hz) for debounce
     check_button_f = 1;
   }
@@ -171,6 +171,7 @@ void loop () {
 
   // Temp checking routine
   if (check_temp_f) {
+    check_temp_f = 0;
     unsigned int temp1, temp2;
 
     temp1 = thermocouple1.readCelsius();
@@ -251,7 +252,7 @@ void loop () {
     the_state = MENU;
     break;
   } // end of switch
-  
+
   // check startstop button, and turn off if flicked
   if (startstop_pressed) {
     startstop_pressed = 0;
@@ -260,6 +261,7 @@ void loop () {
   }
 
   if (update_pwm_f) { // update the pwm duty cycle, and draw state to screen
+    update_pwm_f = 0;
     update_pwm_cycle(new_duty_cyc);
     lcd.setCursor(0,0);
     lcd.print(state_names[the_state]);

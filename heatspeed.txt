@@ -1,0 +1,47 @@
+This is a test to see how fast the oven heats up. the values are in degrees C every 10 seconds.
+The first is from a free "floating" thermocouple in the middle, while the other values come from the arduino
+It runs 100% duty cycle.
+
+33 29
+37 29
+41 29
+48 30
+56 32
+67 34
+78 35
+91 39
+106 41
+120 44
+135 49
+147 53
+158 57
+168 63
+177 67
+187 74
+198 79
+205 84
+214 89
+220 94
+226 99
+stägde av
+vid 3:50
+225 110
+218 113
+210 115
+203 115
+197 115
+191 115
+186 115
+180 114
+175 112
+171 111
+165 110
+161 108
+157 106
+154 105
+150 104
+147 102
+143 100
+140 98
+137 97
+etc.
