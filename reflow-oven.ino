@@ -23,8 +23,8 @@ const int relay_pin = 6;
 
 enum State {MENU, RAMPUP1, SOAK, RAMPUP2, PEAK, COOLDOWN};
 String state_names[6] =
-  { "Menu", "Heating up...  ", "Soaking...     ",
-    "Going up!      ", "peaking!       ", "Cooling down..."
+  { "Menu", "Heating up...   ", "Soaking...      ",
+    "Going up!       ", "peaking!        ", "Cooling down... "
   };
 
 // Some hardware objects
@@ -79,7 +79,7 @@ void setup() {
   digitalWrite(mode_pin, HIGH);
 
   // Setup timer interrupt correctly
-  cli();
+  cli(); // make sure an interrupt doesn't disturb us during update...
   TCCR1A = 0; //CTC mode (count to OCR1A and reset)
   TCCR1B = _BV(WGM12) | _BV(CS10); //CTC, no prescaling
   OCR1A = TIMER_DIV; // With 16 MHz clock exactly 256 Hz of interrupts
@@ -140,6 +140,15 @@ ISR(TIMER1_COMPA_vect) {
   if(tmr_int_cnt == 230) // somewhere around here is a good place to update
     update_pwm_f = 1;
 }
+void reprint_state(State the_state) {
+  lcd.setCursor (0,0);
+  if (the_state != MENU) {
+    lcd.print(state_names[the_state]);
+  }
+  else {
+    lcd.print(profile_name);
+  }
+}
 
 void loop () {
   //this loop needs to check button and temp and update things accordingly
@@ -198,8 +207,7 @@ void loop () {
     }
     if (mode_pressed) {
       mode_pressed = 0;
-      lcd.setCursor(0,0);
-      lcd.print(profile_name);
+      reprint_state();
     }
     break;
   case RAMPUP1:
@@ -207,6 +215,7 @@ void loop () {
     if (last_temp >= itotemp(pb_profile [1])) { // go to next stage at target temp
       the_state = SOAK;
       millis_at_stage_start = millis();
+      reprint_state();
     }
     break;
   case SOAK:
@@ -218,6 +227,7 @@ void loop () {
     if ((millis()-millis_at_stage_start > (pb_profile[2]*1000))) {
       the_state = RAMPUP2;
       millis_at_stage_start = millis();
+      reprint_state();
     }
     break;
   case RAMPUP2:
@@ -226,6 +236,7 @@ void loop () {
     if (last_temp > itotemp(pb_profile [4])) {
       the_state = PEAK;
       millis_at_stage_start = millis();
+      reprint_state();
     }
     break;
   case PEAK:
@@ -237,6 +248,7 @@ void loop () {
     if ((millis()-millis_at_stage_start > (pb_profile[5]*1000))) {
       the_state = COOLDOWN;
       millis_at_stage_start = millis();
+      reprint_state();
     }
     break;
   case COOLDOWN:
@@ -245,11 +257,13 @@ void loop () {
     if (last_temp < itotemp(60)) {
       the_state = MENU;
       millis_at_stage_start = millis();
+      reprint_state();
     }
     break;
   default:
     new_duty_cyc = 0;
     the_state = MENU;
+    reprint_state();
     break;
   } // end of switch
 
@@ -261,9 +275,12 @@ void loop () {
   }
 
   if (update_pwm_f) { // update the pwm duty cycle, and draw state to screen
+    static unsigned char screenupdate = 0;
+    screenupdate++;
     update_pwm_f = 0;
     update_pwm_cycle(new_duty_cyc);
-    lcd.setCursor(0,0);
-    lcd.print(state_names[the_state]);
+    if (screenupdate >= 30) { //fix the screen every 30 sec or so, just in case
+      reprint_state(the_state)
+    }
   }
 }
