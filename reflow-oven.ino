@@ -3,14 +3,11 @@
 #include <math.h>
 #include "init.h"
 
-
-
 enum State {MENU, RAMPUP1, SOAK, RAMPUP2, PEAK, COOLDOWN};
 String state_names[6] =
   { "Menu", "Heating up...   ", "Soaking...      ",
     "Going up!       ", "peaking!        ", "Cooling down... "
   };
-
 
 // Some flags for events
 volatile char check_temp_f = 0;
