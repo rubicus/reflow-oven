@@ -53,14 +53,14 @@ byte MAX6675::spiread(void) {
   for (i=7; i>=0; i--)
   {
     digitalWrite(sclk, LOW);
-    _delay_us(500);
+    _delay_us(100);
     if (digitalRead(miso)) {
       //set the bit to 0 no matter what
       d |= (1 << i);
     }
 
     digitalWrite(sclk, HIGH);
-    _delay_us(500);
+    _delay_us(100);
   }
 
   return d;
