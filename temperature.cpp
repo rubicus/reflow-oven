@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "temperature.h"
+#include "max6675.h"
 
 unsigned int itotemp(unsigned int input) {
   return input << 6;
@@ -48,4 +49,27 @@ void temptos(unsigned int input, char* output) {
   strncat(output, frac_string, 1);
 
   return;
+}
+
+const int thermoDO_pin = 5;
+const int thermoCS1_pin = 4;
+const int thermoCS2_pin = 2;
+const int thermoCLK_pin = 3;
+MAX6675 thermocouple1(thermoCLK_pin, thermoCS1_pin, thermoDO_pin);
+MAX6675 thermocouple2(thermoCLK_pin, thermoCS2_pin, thermoDO_pin);
+
+unsigned int check_print_temp(LiquidCrystal &lcd) {
+  unsigned int mean_temp;
+  unsigned int temp1, temp2;
+
+  temp1 = thermocouple1.readCelsius();
+  temp2 = thermocouple2.readCelsius();
+
+  mean_temp = (temp1+temp2)/2;
+
+  // Update display with new temp
+  char temp_string[6];
+  temptos(mean_temp, temp_string);
+  lcd.setCursor(6,1);
+  lcd.print(temp_string);
 }

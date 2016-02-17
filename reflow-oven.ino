@@ -1,25 +1,9 @@
-#include "max6675.h"
 #include <LiquidCrystal.h>
 #include "temperature.h"
 #include <math.h>
+#include "init.h"
 
-//some constant speed info
-const long CLK_SPEED = 16000000;
-const unsigned int TIMER_DIV = 62500;
-const int INTS_PER_SEC = CLK_SPEED/TIMER_DIV;
-const float MS_PER_INT = 1000.0/INTS_PER_SEC;
-const int MIN_MS_PERCYCLE = 30; // we don't want shorter cycles than 30ms
-// minimum cycles to be turned on:
-const int INTS_PER_MINCYCLE = ceil(MIN_MS_PERCYCLE/MS_PER_INT);
 
-// some constant pin definitions
-const int thermoDO_pin = 5;
-const int thermoCS1_pin = 4;
-const int thermoCS2_pin = 2;
-const int thermoCLK_pin = 3;
-const int startstop_pin = 8;
-const int mode_pin      = 9;
-const int relay_pin = 6;
 
 enum State {MENU, RAMPUP1, SOAK, RAMPUP2, PEAK, COOLDOWN};
 String state_names[6] =
@@ -27,10 +11,6 @@ String state_names[6] =
     "Going up!       ", "peaking!        ", "Cooling down... "
   };
 
-// Some hardware objects
-LiquidCrystal lcd(A0, A1, A2, A3, A4, A5);
-MAX6675 thermocouple1(thermoCLK_pin, thermoCS1_pin, thermoDO_pin);
-MAX6675 thermocouple2(thermoCLK_pin, thermoCS2_pin, thermoDO_pin);
 
 // Some flags for events
 volatile char check_temp_f = 0;
@@ -44,48 +24,6 @@ volatile char update_pwm_f = 0;
 // peak target temp, time at peak
 const long pb_profile[6] = {255,140,45,200,205,20};
 const char profile_name[] = "Old Fashioned Pb";
-
-void init_lcd() {
-  lcd.begin(16,2);
-  lcd.print("Reflow Oven");
-  lcd.setCursor(0,1);
-  lcd.print("Rev 3");
-
-  delay(1000);
-  lcd.clear();
-
-  lcd.setCursor(0,0);
-  lcd.print(profile_name);
-
-  lcd.setCursor(0,1);
-  lcd.print("Temp: ");
-  lcd.setCursor(11,1);
-  lcd.print("\337C");
-
-}
-
-void setup() {
-  Serial.begin(9600);
-  init_lcd();
-
-  // Setup pins correctly
-  pinMode(relay_pin, OUTPUT);
-  digitalWrite(relay_pin, LOW);
-
-  pinMode(startstop_pin, INPUT);
-  digitalWrite(startstop_pin, HIGH);
-
-  pinMode(mode_pin, INPUT);
-  digitalWrite(mode_pin, HIGH);
-
-  // Setup timer interrupt correctly
-  cli(); // make sure an interrupt doesn't disturb us during update...
-  TCCR1A = 0; //CTC mode (count to OCR1A and reset)
-  TCCR1B = _BV(WGM12) | _BV(CS10); //CTC, no prescaling
-  OCR1A = TIMER_DIV; // With 16 MHz clock exactly 256 Hz of interrupts
-  TIMSK1 = _BV(OCIE1A);
-  sei();
-}
 
 // when code in the main code wants to change the pwm duty cycle, this
 // funtction should be called for safe access. This changes the duty
@@ -181,18 +119,7 @@ void loop () {
   // Temp checking routine
   if (check_temp_f) {
     check_temp_f = 0;
-    unsigned int temp1, temp2;
-
-    temp1 = thermocouple1.readCelsius();
-    temp2 = thermocouple2.readCelsius();
-
-    last_temp = (temp1+temp2)/2;
-
-    // Update display with new temp
-    char temp_string[6];
-    temptos(last_temp, temp_string);
-    lcd.setCursor(6,1);
-    lcd.print(temp_string);
+    last_temp = check_print_temp(lcd);
   }
 
   // Main switch case for dealing with states
@@ -207,7 +134,7 @@ void loop () {
     }
     if (mode_pressed) {
       mode_pressed = 0;
-      reprint_state();
+      reprint_state(the_state);
     }
     break;
   case RAMPUP1:
@@ -215,7 +142,7 @@ void loop () {
     if (last_temp >= itotemp(pb_profile [1])) { // go to next stage at target temp
       the_state = SOAK;
       millis_at_stage_start = millis();
-      reprint_state();
+      reprint_state(the_state);
     }
     break;
   case SOAK:
@@ -227,7 +154,7 @@ void loop () {
     if ((millis()-millis_at_stage_start > (pb_profile[2]*1000))) {
       the_state = RAMPUP2;
       millis_at_stage_start = millis();
-      reprint_state();
+      reprint_state(the_state);
     }
     break;
   case RAMPUP2:
@@ -236,7 +163,7 @@ void loop () {
     if (last_temp > itotemp(pb_profile [4])) {
       the_state = PEAK;
       millis_at_stage_start = millis();
-      reprint_state();
+      reprint_state(the_state);
     }
     break;
   case PEAK:
@@ -248,7 +175,7 @@ void loop () {
     if ((millis()-millis_at_stage_start > (pb_profile[5]*1000))) {
       the_state = COOLDOWN;
       millis_at_stage_start = millis();
-      reprint_state();
+      reprint_state(the_state);
     }
     break;
   case COOLDOWN:
@@ -257,13 +184,13 @@ void loop () {
     if (last_temp < itotemp(60)) {
       the_state = MENU;
       millis_at_stage_start = millis();
-      reprint_state();
+      reprint_state(the_state);
     }
     break;
   default:
     new_duty_cyc = 0;
     the_state = MENU;
-    reprint_state();
+    reprint_state(the_state);
     break;
   } // end of switch
 
@@ -280,7 +207,7 @@ void loop () {
     update_pwm_f = 0;
     update_pwm_cycle(new_duty_cyc);
     if (screenupdate >= 30) { //fix the screen every 30 sec or so, just in case
-      reprint_state(the_state)
+      reprint_state(the_state);
     }
   }
 }
