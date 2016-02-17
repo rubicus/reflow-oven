@@ -3,9 +3,9 @@
 #include <math.h>
 #include "init.h"
 
-enum State {MENU, RAMPUP1, SOAK, RAMPUP2, PEAK, COOLDOWN};
-String state_names[6] =
-  { "Menu", "Heating up...   ", "Soaking...      ",
+enum State {NONE, MENU, RAMPUP1, SOAK, RAMPUP2, PEAK, COOLDOWN};
+String state_names[7] =
+  { "Not initialized", "Menu", "Heating up...   ", "Soaking...      ",
     "Going up!       ", "peaking!        ", "Cooling down... "
   };
 
@@ -25,7 +25,7 @@ const char profile_name[] = "Old Fashioned Pb";
 // when code in the main code wants to change the pwm duty cycle, this
 // funtction should be called for safe access. This changes the duty
 // cycle for the next PWM cycle.
-inline void update_pwm_cycle(unsigned char new_cycle) {
+void update_pwm_cycle(unsigned char new_cycle) {
   cli(); // clear interrupt flag for safe access to shared vars
   // Make sure the cycle is longer than the minimum cycle length
   // and to max out if not turned off enough
@@ -36,6 +36,7 @@ inline void update_pwm_cycle(unsigned char new_cycle) {
   else
     next_PWM_cycle = new_cycle;
   sei(); // reenable interrupts
+  return;
 }
 
 void pwm_routine(unsigned char count_val) {
@@ -90,7 +91,7 @@ void loop () {
   // it also needs to check buttons and do the right thing depending on state
 
   // Some local variables (statically to be retained between calls)
-  static State the_state = MENU;
+  static State the_state = NONE;
   static char last_startstopb_s = digitalRead(startstop_pin);
   static char last_modeb_s = digitalRead(mode_pin);
   static char startstop_pressed = 0;
@@ -128,6 +129,7 @@ void loop () {
       startstop_pressed = 0;
       the_state = RAMPUP1;
       millis_at_stage_start = millis();
+      reprint_state(the_state);
     }
     if (mode_pressed) {
       mode_pressed = 0;
@@ -196,6 +198,7 @@ void loop () {
     startstop_pressed = 0;
     the_state = MENU;
     new_duty_cyc = 0;
+    reprint_state(the_state);
   }
 
   if (update_pwm_f) { // update the pwm duty cycle, and draw state to screen
