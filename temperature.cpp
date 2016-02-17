@@ -14,14 +14,14 @@ unsigned int itotemp(unsigned int input) {
 // this function turns a temperature into a string
 // the pointer given here must point towards at least 6 bytes of mem
 void temptos(unsigned int input, char* output) {
-  char fraction = input % 64;
+  unsigned char fraction = input % 64;
   int int_part = input / 64;
   char int_string[4];
   char frac_string[2];
 
   //find the fraction digit
-  char frac_digit = (fraction*2)/13;
-  if (frac_digit % 13 > 6) // rounding
+  unsigned char frac_digit = (fraction*2+3)/13;
+  if ((fraction*2+3) % 13 > 6) // rounding
     ++frac_digit;
   if (frac_digit == 10) {
     frac_digit = 0;
