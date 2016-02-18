@@ -76,6 +76,7 @@ ISR(TIMER1_COMPA_vect) {
   if(tmr_int_cnt == 230) // somewhere around here is a good place to update
     update_pwm_f = 1;
 }
+
 void reprint_state(State the_state) {
   lcd.setCursor (0,0);
   if (the_state != MENU) {
