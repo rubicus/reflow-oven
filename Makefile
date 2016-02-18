@@ -3,7 +3,7 @@ ARDUINO_LIBS = LiquidCrystal # MAX6675_library (now modded in project)
 #ARCHITECTURE = avr
 OPTIMIZATION_LEVEL = s
 CFLAGS = -std=c11
-CXXFLAGS = -std=gnu++11
+CPPFLAGS = -std=gnu++11
 
 include Arduino-Makefile/Arduino.mk
 
