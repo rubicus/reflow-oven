@@ -19,7 +19,7 @@ volatile char update_pwm_f = 0;
 // a soldering profile:
 // Rampup1 speed (0-255), soak target, soak time, rampup2 speed(0-255),
 // peak target temp, time at peak
-const long pb_profile[6] = {255,140,45,200,205,20};
+const unsigned int pb_profile[6] = {255,140,45,200,205,20};
 const char profile_name[] = "Old Fashioned Pb";
 
 // when code in the main code wants to change the pwm duty cycle, this
@@ -98,6 +98,7 @@ void loop () {
   static char mode_pressed = 0;
   static unsigned int last_temp = itotemp(20);
   static long millis_at_stage_start = millis();
+  static long millis_at_start;
 
   // Button checking routine
   if (check_button_f) {
@@ -129,6 +130,7 @@ void loop () {
       startstop_pressed = 0;
       the_state = RAMPUP1;
       millis_at_stage_start = millis();
+      millis_at_start = millis_at_stage_start;
       reprint_state(the_state);
     }
     if (mode_pressed) {
@@ -202,13 +204,24 @@ void loop () {
   }
 
   if (update_pwm_f) { // update the pwm duty cycle, and draw state to screen
+    update_pwm_f = 0;
+
+    // update screen?
     static unsigned char screenupdate = 0;
     screenupdate++;
-    update_pwm_f = 0;
     update_pwm_cycle(new_duty_cyc);
     if (screenupdate >= 30) { //fix the screen every 30 sec or so, just in case
       screenupdate = 0;
       reprint_state(the_state);
     }
+
+    //print elapsed time
+    long now_time = millis();
+    long stage_time = millis_at_stage_start - now_time;
+    long total_time = millis_at_start - now_time;
+    int stage_secs = stage_time / 1000;
+    int total_secs = total_time / 1000;
+    char time_string[11];
+    snprintf(time_string, 11, "%3ds %3ds ", stage_secs, total_secs);
   }
 }

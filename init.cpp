@@ -25,12 +25,6 @@ void init_lcd() {
 
   delay(1000);
   lcd.clear();
-
-  lcd.setCursor(0,1);
-  lcd.print("Temp: ");
-  lcd.setCursor(11,1);
-  lcd.print("\337C");
-
 }
 
 void setup() {

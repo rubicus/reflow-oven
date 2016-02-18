@@ -70,7 +70,8 @@ unsigned int check_print_temp(LiquidCrystal &lcd) {
   // Update display with new temp
   char temp_string[6];
   temptos(mean_temp, temp_string);
-  lcd.setCursor(6,1);
+  lcd.setCursor(11,1);
   lcd.print(temp_string);
+  lcd.print("\337");
   return mean_temp;
 }
