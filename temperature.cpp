@@ -72,4 +72,5 @@ unsigned int check_print_temp(LiquidCrystal &lcd) {
   temptos(mean_temp, temp_string);
   lcd.setCursor(6,1);
   lcd.print(temp_string);
+  return mean_temp;
 }

@@ -207,6 +207,7 @@ void loop () {
     update_pwm_f = 0;
     update_pwm_cycle(new_duty_cyc);
     if (screenupdate >= 30) { //fix the screen every 30 sec or so, just in case
+      screenupdate = 0;
       reprint_state(the_state);
     }
   }
