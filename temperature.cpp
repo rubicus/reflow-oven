@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "temperature.h"
 #include "max6675.h"
+#include "filter.hpp"
 
 unsigned int itotemp(unsigned int input) {
   return input << 6;
@@ -66,6 +67,9 @@ unsigned int check_print_temp(LiquidCrystal &lcd) {
   temp2 = thermocouple2.readCelsius();
 
   mean_temp = (temp1+temp2)/2;
+  #ifndef SKIP_FILTER
+  mean_temp = write_filter_value(mean_temp);
+  #endif
 
   // Update display with new temp
   char temp_string[6];

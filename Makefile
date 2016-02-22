@@ -1,7 +1,7 @@
 BOARD_TAG    = nano328
 ARDUINO_LIBS = LiquidCrystal # MAX6675_library (now modded in project)
 #ARCHITECTURE = avr
-OPTIMIZATION_LEVEL = s
+OPTIMIZATION_LEVEL = 2
 CFLAGS = -std=c11
 CPPFLAGS = -std=gnu++11
 

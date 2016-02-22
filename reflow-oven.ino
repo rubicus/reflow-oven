@@ -4,9 +4,9 @@
 #include "init.h"
 
 enum State {NONE, MENU, RAMPUP1, SOAK, RAMPUP2, PEAK, COOLDOWN};
-String state_names[7] =
+char state_names[7][17] =
   { "Not initialized", "Menu", "Heating up...   ", "Soaking...      ",
-    "Going up!       ", "peaking!        ", "Cooling down... "
+    "Going for peak! ", "peaking!        ", "Cooling down... "
   };
 
 // Some flags for events
