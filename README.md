@@ -6,7 +6,6 @@ This is code for a reflow oven for the electronics laboratory Admittansen in Lin
 This project assumes an Arudino Nano, two thermocouples connected to MAX6675 chips, and a 16x2 character LCD. The toaster oven is controlled by a solid state relay.
 
 ## TODO:
- * Add filter for thermometer
  * Implement PID control
  * More profiles (move profiles to a struct/class)
  * Refactor?
