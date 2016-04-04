@@ -64,7 +64,7 @@ unsigned int check_print_temp(LiquidCrystal &lcd) {
   unsigned int temp1, temp2;
 
   temp1 = thermocouple1.readCelsius();
-  temp2 = thermocouple2.readCelsius();
+  temp2 = temp1;// thermocouple2.readCelsius();
 
   mean_temp = (temp1+temp2)/2;
   #ifndef SKIP_FILTER

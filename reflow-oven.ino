@@ -3,6 +3,8 @@
 #include <math.h>
 #include "init.h"
 
+#define SKIP_FILTER
+
 enum State {NONE, MENU, RAMPUP1, SOAK, RAMPUP2, PEAK, COOLDOWN};
 char state_names[7][17] =
   { "Not initialized", "Menu", "Heating up...   ", "Soaking...      ",
