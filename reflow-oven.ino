@@ -8,6 +8,7 @@ char state_names[7][17] =
   { "Not initialized", "Menu", "Heating up...   ", "Soaking...      ",
     "Going for peak! ", "peaking!        ", "Cooling down... "
   };
+const char * empty_time = "           ";
 
 // Some flags for events
 volatile char check_temp_f = 0;
@@ -218,11 +219,16 @@ void loop () {
 
     //print elapsed time
     long now_time = millis();
-    long stage_time = millis_at_stage_start - now_time;
-    long total_time = millis_at_start - now_time;
+    long stage_time = now_time - millis_at_stage_start;
+    long total_time = now_time - millis_at_start;
     int stage_secs = stage_time / 1000;
     int total_secs = total_time / 1000;
     char time_string[11];
-    snprintf(time_string, 11, "%3ds %3ds ", stage_secs, total_secs);
+    if (the_state != MENU)
+      snprintf(time_string, 11, "%3ds %3ds ", stage_secs, total_secs);
+    else
+      strncpy(time_string, empty_time, 11); //GIVES weird character!
+    lcd.setCursor(0,1);
+    lcd.print(time_string);
   }
 }
