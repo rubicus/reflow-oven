@@ -1,0 +1,16 @@
+Tanken är att utifrån en temperatur och en måltemperatur kunna noga reglera temperaturen i ugnen.
+Framför allt tar vi tempen från det termoelement som ligger i ugnen. Vid snabba uppvärmningar
+vill vi ändå bara köra rakt på, så där bryr vi oss inte så mycket om regleringen, men däremot
+är den viktig där man vill hålla en temperatur.
+
+Vi vill alltså ha en P-del, en I-del och en D-del. Rimligt vore att utgå från en gissning
+och se till att inte I-delen lämnar för mycket historia på något sätt. För att få till den
+långsamma ökningen vill man ju dels se till att man inte når för högt för snabbt, men ändå
+att man kommer ganska nära den övre gränsen inom en rimlig tid. Bättre att det går för
+långsamt än för snabbt, men får absolut inte börja sjunka. Rimligt vore att försöka
+reglera själva ökningstakten snarare än temperaturen i sig.
+
+Dǻ måste vi alltså försöka skapa ett ökningsvärde (förmodligen i ett filter).
+När man inleder en PID-fas vill man ladda regleringen med värden att utgå från. Sedan
+uppdaterar man styrsignalen varje gång man får in ett mätvärde. D-delen kommer att kräva
+en andraderivata av tempen också.

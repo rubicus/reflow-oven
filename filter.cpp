@@ -49,15 +49,34 @@ short Filter::new_input(short x0) {
 // following values:
 // First:  0,044, 0,089, 0,044, 1,459, -0,557
 // second: 0,031, 0,063, 0,031, 1,567, -0,795
-Filter first_filter(720, 1441, 720, 23903, -9128, 14);
-Filter second_filter(507, 1032, 507, 25676, -13033, 14);
+class Double_filter {
+public:
+  Double_filter() :
+    first_filter(720,1441,720,23903, -9128, 14),
+    second_filter(507, 1032, 507,25676, -13033, 14) {}
+  short write_value(short new_val);
+  short get_last();
+private:
+  Filter first_filter;
+  Filter second_filter;
+};
 
-short write_filter_value(short new_val) {
+Double_filter temp_filter;
+
+short Double_filter::write_value(short new_val) {
   short intermediate_val = first_filter.new_input(new_val);
   short return_val = second_filter.new_input(intermediate_val);
   return return_val;
 }
 
-short get_last_val() {
+short Double_filter::get_last() {
   return second_filter.get_last();
+}
+
+short write_filter_value(short new_val) {
+  return temp_filter.write_value(new_val);
+}
+
+short get_last_val() {
+  return temp_filter.get_last();
 }

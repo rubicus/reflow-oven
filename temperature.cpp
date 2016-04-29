@@ -8,6 +8,8 @@
 #include "max6675.h"
 #include "filter.hpp"
 
+#define SKIP_FILTER
+
 unsigned int itotemp(unsigned int input) {
   return input << 6;
 }
