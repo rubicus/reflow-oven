@@ -62,6 +62,8 @@ private:
 };
 
 Double_filter temp_filter;
+Double_filter tempdot_filter;
+Double_filter tempdotdot_filter;
 
 short Double_filter::write_value(short new_val) {
   short intermediate_val = first_filter.new_input(new_val);
@@ -73,8 +75,20 @@ short Double_filter::get_last() {
   return second_filter.get_last();
 }
 
+// This function writes a new value to the temperature filter and returns the
+// latest filtered temp valuel. Also updates the T-derivates, but gives no
+// outputs from these.
 short write_filter_value(short new_val) {
-  return temp_filter.write_value(new_val);
+  static short last_temp = 0;
+  static short last_tempdot = 0;
+  short now_temp = temp_filter.write_value(new_val);
+  short delta_T = now_temp-last_temp;
+  short now_tempdot = tempdot_filter.write_value(delta_T);
+  short deltadelta_T = now_tempdot-last_tempdot;
+  tempdotdot_filter.write_value(deltadelta_T);
+  last_temp = now_temp;
+  last_tempdot = now_tempdot;
+  return now_temp;
 }
 
 short get_last_val() {
