@@ -94,3 +94,11 @@ short write_filter_value(short new_val) {
 short get_last_val() {
   return temp_filter.get_last();
 }
+
+short get_tempdot() {
+  return tempdot_filter.get_last();
+}
+
+short get_tempdotdot() {
+  return tempdotdot_filter.get_last();
+}
