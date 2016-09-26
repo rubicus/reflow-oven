@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include <LiquidCrystal.h>
 #include "temperature.h"
 #include <math.h>
@@ -9,6 +10,15 @@ char state_names[7][17] =
     "Going for peak! ", "peaking!        ", "Cooling down... "
   };
 const char * empty_time = "           ";
+
+void update_pwm_cycle(unsigned char new_cycle) ;
+void update_pwm_cycle(unsigned char new_cycle) ;
+void pwm_routine(unsigned char count_val) ;
+void pwm_routine(unsigned char count_val) ;
+void reprint_state(State the_state) ;
+void reprint_state(State the_state) ;
+void loop () ;
+void loop () ;
 
 // Some flags for events
 volatile char check_temp_f = 0;

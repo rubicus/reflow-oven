@@ -15,5 +15,4 @@ set(ARDUINO_DEFAULT_PORT /dev/ttyUSB0) #USB-serial port. typical arduino
 
 #Here is the build recipe for our program
 generate_arduino_firmware(reflow_oven
-  SKETCH reflow-oven.ino
-  SRCS filter.cpp temperature.cpp init.cpp max6675.cpp)
+  SRCS reflow-oven.cpp filter.cpp temperature.cpp init.cpp max6675.cpp)

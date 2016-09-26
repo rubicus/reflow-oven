@@ -7,6 +7,9 @@
 #=============================================================================#
 set(CMAKE_TOOLCHAIN_FILE cmake/ArduinoToolchain.cmake) # Arduino Toolchain
 
+#Make sure we work with C11 and C++11
+set(ARDUINO_C_FLAGS "std=c11")
+set(ARDUINO_CXX_FLAGS "std=gnu++11")
 
 cmake_minimum_required(VERSION 2.8)
 #====================================================================#
